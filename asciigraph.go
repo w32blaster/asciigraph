@@ -7,9 +7,10 @@ import (
 	"strings"
 )
 
+const precision = 0
+
 // Plot returns ascii graph for a series.
-func Plot(series []float64, options ...Option) string {
-	var logMaximum float64
+func Plot(series []float64, options ...Option) (string, int) {
 	config := configure(config{
 		Offset: 3,
 	}, options)
@@ -57,24 +58,6 @@ func Plot(series []float64, options ...Option) string {
 			line = append(line, " ")
 		}
 		plot = append(plot, line)
-	}
-
-	precision := 0
-	logMaximum = math.Log10(math.Max(math.Abs(maximum), math.Abs(minimum))) //to find number of zeros after decimal
-	if minimum == float64(0) && maximum == float64(0) {
-		logMaximum = float64(-1)
-	}
-
-	if logMaximum < 0 {
-		// negative log
-		if math.Mod(logMaximum, 1) != 0 {
-			// non-zero digits after decimal
-			precision = precision + int(math.Abs(logMaximum))
-		} else {
-			precision = precision + int(math.Abs(logMaximum)-1.0)
-		}
-	} else if logMaximum > 2 {
-		precision = 0
 	}
 
 	maxNumLength := len(fmt.Sprintf("%0.*f", precision, maximum))
@@ -140,12 +123,26 @@ func Plot(series []float64, options ...Option) string {
 		}
 	}
 
+	leftLabelOffset := config.Offset + maxWidth
+
+	// bottom line
+	lines.WriteRune('\n')
+	lines.WriteString(strings.Repeat(" ", leftLabelOffset-1))
+	lines.WriteRune('╰')
+	for i := 0; i < len(plot[1])-1; i++ {
+		if i%3 == 0 {
+			lines.WriteRune('┬')
+		} else {
+			lines.WriteRune('─')
+		}
+	}
+
 	// add caption if not empty
 	if config.Caption != "" {
 		lines.WriteRune('\n')
-		lines.WriteString(strings.Repeat(" ", config.Offset+maxWidth+2))
+		lines.WriteString(strings.Repeat(" ", leftLabelOffset+2))
 		lines.WriteString(config.Caption)
 	}
 
-	return lines.String()
+	return lines.String(), leftLabelOffset
 }
