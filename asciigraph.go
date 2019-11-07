@@ -129,7 +129,7 @@ func Plot(series []float64, options ...Option) (string, int) {
 	lines.WriteRune('\n')
 	lines.WriteString(strings.Repeat(" ", leftLabelOffset-1))
 	lines.WriteRune('╰')
-	for i := 0; i < len(plot[1])-1; i++ {
+	for i := 0; i < len(plot[0])-1; i++ {
 		if i%3 == 0 {
 			lines.WriteRune('┬')
 		} else {
